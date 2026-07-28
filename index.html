@@ -800,10 +800,10 @@
             <!-- Center Display -->
             <div style="display: flex; gap: 15px; align-items: center; flex: 1; justify-content: center;">
                 <!-- Number Called -->
-                <div class="last-called-mini" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); padding: 15px 20px; border-radius: 6px; border: 2px solid #4CAF50; min-width: 150px; text-align: center;">
-                    <div style="font-size: 12px; color: #ddd; text-transform: uppercase;">Called</div>
-                    <div style="font-size: 48px; font-weight: bold; color: #fff;" id="lastNumberMini">---</div>
-                    <div style="font-size: 13px; color: #e0e0e0; font-style: italic;" id="lastNumberNameMini"></div>
+                <div class="last-called-mini" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); padding: 20px 30px; border-radius: 6px; border: 2px solid #4CAF50; min-width: 180px; text-align: center;">
+                    <div style="font-size: 14px; color: #ddd; text-transform: uppercase;">Called</div>
+                    <div style="font-size: 96px; font-weight: bold; color: #fff;" id="lastNumberMini">---</div>
+                    <div style="font-size: 16px; color: #e0e0e0; font-style: italic;" id="lastNumberNameMini"></div>
                 </div>
 
                 <!-- Last 5 Numbers -->
@@ -1302,7 +1302,7 @@
                             lastFiveMiniContainer.innerHTML = '<span style="color: #999;">---</span>';
                         } else {
                             lastFiveMiniContainer.innerHTML = this.lastFiveNumbers.map(n =>
-                                `<span style="background: #2196F3; color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 24px;">${n}</span>`
+                                `<span style="background: #2196F3; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 48px;">${n}</span>`
                             ).join('');
                         }
                     }
