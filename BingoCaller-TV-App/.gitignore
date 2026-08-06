@@ -1,0 +1,41 @@
+# React Native
+node_modules/
+.gradle
+.m2repository
+*.keystore
+*.jks
+*.p12
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Build outputs
+/android/app/build
+/android/.gradle
+/ios/build
+/ios/Pods
+build/
+
+# RN specific
+/android/.gradle/
+/android/.idea
+/android/local.properties
+/android/app/build/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+
+# Misc
+*.jsbundle
+*.bundle

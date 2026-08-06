@@ -1,0 +1,4 @@
+C:\Dev\repos\Bingo Caller\desktop application\obj\Debug\net8.0-windows\BingoCaller.csproj.AssemblyReference.cache
+C:\Dev\repos\Bingo Caller\desktop application\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Dev\repos\Bingo Caller\desktop application\obj\Debug\net8.0-windows\App.g.cs
+C:\Dev\repos\Bingo Caller\desktop application\obj\Debug\net8.0-windows\BingoCaller_MarkupCompile.cache

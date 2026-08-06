@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Bingo Caller Display",
+    "slug": "bingo-caller-display",
+    "version": "1.0.0",
+    "orientation": "landscape",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "description": "Professional Bingo Caller Display for Android TV, Fire TV, and Google TV",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e1e1e"
+      },
+      "permissions": [
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "package": "com.bingocaller.display"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "29edcf89-e075-4acf-bf8f-81d33c49d888"
+      }
+    }
+  }
+}
