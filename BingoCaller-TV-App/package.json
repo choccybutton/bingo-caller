@@ -29,5 +29,12 @@
   },
   "engines": {
     "node": ">=16"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["react-native-tts"]
+      }
+    }
   }
 }
