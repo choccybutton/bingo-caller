@@ -24,7 +24,7 @@ import {
   TVEventHandler,
   useFocusEffect,
 } from 'react-native';
-import Tts from 'react-native-tts';
+import * as Speech from 'expo-speech';
 import GameDisplay from './src/components/GameDisplay';
 import StatusBar from './src/components/StatusBar';
 import NumberGrid from './src/components/NumberGrid';
@@ -128,16 +128,22 @@ const App = () => {
 
   // Initialize text-to-speech
   useEffect(() => {
-    Tts.setDefaultLanguage('en-GB');
-    Tts.setDefaultRate(0.9);
-    Tts.setDefaultPitch(1.0);
+    // expo-speech auto-initializes on Android
+    // Set default voice properties if needed
+    Speech.getAvailableVoicesAsync().then((voices) => {
+      console.log('Available voices:', voices.length);
+    });
   }, []);
 
   // Speak number when new one is called
   useEffect(() => {
     if (gameState.lastNumber && gameState.callAnnouncer?.shouldSpeak) {
       const name = gameState.callAnnouncer.getNumberName(gameState.lastNumber);
-      Tts.speak(`${name}, number ${gameState.lastNumber}`);
+      Speech.speak(`${name}, number ${gameState.lastNumber}`, {
+        language: 'en-GB',
+        rate: 0.9,
+        pitch: 1.0,
+      });
     }
   }, [gameState.lastNumber]);
 
