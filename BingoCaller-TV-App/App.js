@@ -15,14 +15,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   View,
   Text,
   StyleSheet,
   ActivityIndicator,
-  Dimensions,
   TVEventHandler,
-  useFocusEffect,
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import GameDisplay from './src/components/GameDisplay';
@@ -104,23 +101,33 @@ const App = () => {
 
       for (const ip of commonIPs) {
         try {
-          const response = await fetch(`${ip}/api/state`, { timeout: 2000 });
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+          const response = await fetch(`${ip}/api/state`, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
           if (response.ok) {
             setServerUrl(ip);
             setIsConfigured(true);
             connectToServer();
-            break;
+            return;
           }
         } catch (e) {
           // Try next IP
+          console.log(`Failed to connect to ${ip}`);
         }
       }
 
-      if (!isConfigured) {
-        setConnectionError('Could not auto-detect server. Please configure manually.');
-      }
+      // If we get here, no server was found - but still mark as configured
+      // so the UI shows the waiting message
+      setServerUrl(null);
+      setIsConfigured(true);
+      setConnectionError('Could not auto-detect server. Make sure the server is running on this network.');
     } catch (error) {
-      setConnectionError(`Connection failed: ${error.message}`);
+      console.error('Auto-connect failed:', error);
+      setIsConfigured(true);
+      setConnectionError(`Connection error: ${error.message}`);
     } finally {
       setConnecting(false);
     }
