@@ -5,6 +5,6 @@
 import { AppRegistry } from 'react-native';
 import App from './App';
 
-// Use a valid identifier for the app registration
-// The package name must be a valid JavaScript identifier (no spaces)
-AppRegistry.registerComponent('BingoCallerDisplay', () => App);
+// Register the app component
+// Expo managed apps use 'main' as the default entry point
+AppRegistry.registerComponent('main', () => App);
