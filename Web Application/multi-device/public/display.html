@@ -109,12 +109,35 @@
             height: 70px;
             font-size: 16px;
         }
+
+        .connection-badge {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 12px;
+            margin: 0 12px;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        .connection-badge--connected {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            border-color: #4CAF50;
+        }
+
+        .connection-badge--connecting {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            border-color: #f44336;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🎰 Bingo Display</h1>
+            <div id="connectionBadge" class="connection-badge connection-badge--connecting">Connecting…</div>
             <button id="fullscreenBtn" class="fullscreen-btn">⛶ Fullscreen</button>
         </div>
 
@@ -159,6 +182,7 @@
     <script src="/shared/speech.js"></script>
     <script src="/shared/sse-client.js"></script>
     <script src="/shared/announcer.js"></script>
+    <script src="/shared/wake-lock.js"></script>
     <script>
         // Display state management
         let currentGame = null;
@@ -170,12 +194,26 @@
         function initDisplay() {
             renderGrid(); // Render empty grid initially
             connectToServer();
+            requestWakeLock(); // Keep this screen from sleeping/turning off
         }
 
         // Connect to the server via SSE
         function connectToServer() {
-            sseClient = new SSEClient(clientId, 'display', onStateUpdate);
+            sseClient = new SSEClient(clientId, 'display', onStateUpdate, onConnectionStatusChange);
             sseClient.connect();
+        }
+
+        // Reflect connection status in the header badge
+        function onConnectionStatusChange(connected) {
+            const badge = document.getElementById('connectionBadge');
+            if (!badge) return;
+            if (connected) {
+                badge.textContent = '🟢 Connected';
+                badge.className = 'connection-badge connection-badge--connected';
+            } else {
+                badge.textContent = '🔴 Reconnecting…';
+                badge.className = 'connection-badge connection-badge--connecting';
+            }
         }
 
         // Handle incoming state updates from the server

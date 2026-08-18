@@ -140,13 +140,15 @@ function stopAutoTimer() {
   }
 }
 
-// Keep-alive ping (every 20 seconds) to prevent idle connection timeout
+// Keep-alive ping (every 20 seconds) to prevent idle connection timeout.
+// Sent as a named 'ping' event (not a bare comment) so connected clients can
+// observe it and use it to detect a stalled/zombie connection client-side.
 function startKeepAlive() {
   setInterval(() => {
     devicesRegistry.all().forEach((device) => {
       if (device.res && device.connected) {
         try {
-          device.res.write(':\n\n');
+          device.res.write(`event: ping\ndata: ${Date.now()}\n\n`);
         } catch (err) {
           devicesRegistry.disconnect(device.id);
         }
@@ -180,6 +182,14 @@ const server = http.createServer((req, res) => {
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive'
     });
+
+    // Advertise a reconnect interval for any other/future SSE clients that
+    // do rely on the browser's built-in retry. Our own client drives
+    // reconnection explicitly (see shared/sse-client.js) rather than
+    // trusting it, since Chrome doesn't actually auto-retry a connection
+    // that never opened in the first place — only one that drops after
+    // being open.
+    res.write('retry: 3000\n\n');
 
     // Send immediate full snapshot
     broadcastState();

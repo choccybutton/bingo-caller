@@ -1,2 +1,0 @@
-- [Multi-Device Implementation](implementation_multi_device_complete.md) — Complete zero-dependency multi-device bingo sync system with crash recovery
-- [TV App Implementation](tv_app_implementation.md) — React Native TV app for Android TV, Fire TV, Google TV, Apple TV, Samsung Tizen with full display functionality
