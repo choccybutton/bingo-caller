@@ -793,7 +793,7 @@
             <!-- Left Controls -->
             <div class="controls-group-left" style="display: flex; gap: 10px; align-items: center;">
                 <button id="playPauseBtn" class="btn-success icon-btn" title="Play" style="padding: 10px 14px; font-size: 16px;">▶️</button>
-                <button id="callBtn" class="btn-primary icon-btn" disabled title="Call Number" style="padding: 10px 14px; font-size: 16px;">⏭</button>
+                <button id="callBtn" class="btn-primary icon-btn" title="Call Number" style="padding: 10px 14px; font-size: 16px;">⏭</button>
                 <button id="muteBtn" class="btn-primary icon-btn" title="Mute" style="padding: 10px 14px; font-size: 16px;">🔊</button>
             </div>
 
@@ -1038,7 +1038,13 @@
                         this.togglePlayPause();
                     }
                 });
-                if (callBtn) callBtn.addEventListener('click', () => this.callNumber());
+                if (callBtn) callBtn.addEventListener('click', () => {
+                    if (!this.gameRunning) {
+                        console.log('Call Number clicked before game started - starting game paused');
+                        this.startGame(false);
+                    }
+                    this.callNumber();
+                });
                 if (muteBtn) muteBtn.addEventListener('click', () => this.toggleMute());
                 if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
 
@@ -1053,12 +1059,12 @@
                 // Radio button listeners are now handled via event delegation in DOMContentLoaded
             }
 
-            startGame() {
+            startGame(autoPlay = true) {
                 try {
-                    console.log('Starting game with type:', this.gameType);
+                    console.log('Starting game with type:', this.gameType, 'autoPlay:', autoPlay);
 
                     this.gameRunning = true;
-                    this.gamePlaying = true;
+                    this.gamePlaying = autoPlay;
                     this.calledNumbers = [];
                     this.lastFiveNumbers = [];
                     this.numbers = this.shuffleArray(Array.from({length: this.gameType}, (_, i) => i + 1));
@@ -1069,9 +1075,18 @@
                     this.renderGrid();
 
                     const playPauseBtn = document.getElementById('playPauseBtn');
-                    if (playPauseBtn) {
-                        playPauseBtn.textContent = '⏸';
-                        playPauseBtn.title = 'Pause';
+                    const statusEl = document.getElementById('status');
+                    if (autoPlay) {
+                        if (playPauseBtn) {
+                            playPauseBtn.textContent = '⏸';
+                            playPauseBtn.title = 'Pause';
+                        }
+                    } else {
+                        if (playPauseBtn) {
+                            playPauseBtn.textContent = '▶️';
+                            playPauseBtn.title = 'Play';
+                        }
+                        if (statusEl) statusEl.textContent = 'Paused';
                     }
 
                     document.querySelectorAll('input[name="gameType"]').forEach(r => r.disabled = true);
@@ -1084,7 +1099,9 @@
 
                     console.log('Game started successfully');
 
-                    this.startAutoMode();
+                    if (autoPlay) {
+                        this.startAutoMode();
+                    }
                 } catch (error) {
                     console.error('Error starting game:', error);
                 }
@@ -1229,7 +1246,7 @@
                 if (delayInput) delayInput.disabled = false;
 
                 const callBtn = document.getElementById('callBtn');
-                if (callBtn) callBtn.disabled = true;
+                if (callBtn) callBtn.disabled = false;
 
                 const statusEl = document.getElementById('status');
                 if (statusEl) statusEl.textContent = 'Ready';
