@@ -137,20 +137,30 @@ const App = () => {
   useEffect(() => {
     // expo-speech auto-initializes on Android
     // Set default voice properties if needed
-    Speech.getAvailableVoicesAsync().then((voices) => {
-      console.log('Available voices:', voices.length);
-    });
+    Speech.getAvailableVoicesAsync()
+      .then((voices) => {
+        console.log('Available voices:', voices.length);
+      })
+      .catch((err) => {
+        console.warn('Failed to get available voices:', err);
+      });
   }, []);
 
   // Speak number when new one is called
   useEffect(() => {
     if (gameState.lastNumber && gameState.callAnnouncer?.shouldSpeak) {
-      const name = gameState.callAnnouncer.getNumberName(gameState.lastNumber);
-      Speech.speak(`${name}, number ${gameState.lastNumber}`, {
-        language: 'en-GB',
-        rate: 0.9,
-        pitch: 1.0,
-      });
+      try {
+        const name = gameState.callAnnouncer.getNumberName(gameState.lastNumber);
+        Speech.speak(`${name}, number ${gameState.lastNumber}`, {
+          language: 'en-GB',
+          rate: 0.9,
+          pitch: 1.0,
+        }).catch((err) => {
+          console.warn('Failed to speak:', err);
+        });
+      } catch (err) {
+        console.error('Error in speech:', err);
+      }
     }
   }, [gameState.lastNumber]);
 
