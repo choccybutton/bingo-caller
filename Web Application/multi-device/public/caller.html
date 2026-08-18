@@ -16,6 +16,42 @@
             height: auto;
         }
 
+        .header-bar {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+        }
+
+        .header-bar h1 {
+            color: #4CAF50;
+            margin: 0;
+        }
+
+        .header-bar .nav-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-links a {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: #1a1a1a;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            background: #45a049;
+        }
+
         .left-panel {
             display: flex;
             flex-direction: column;
@@ -191,58 +227,6 @@
             min-width: 100px;
         }
 
-        .players-list {
-            max-height: 300px;
-            overflow-y: auto;
-            font-size: 0.85em;
-        }
-
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #2a2a2a;
-            border-radius: 4px;
-            border-left: 3px solid #4CAF50;
-        }
-
-        .player-name {
-            flex: 1;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .player-prizes {
-            display: flex;
-            gap: 15px;
-            margin-right: 10px;
-            font-size: 0.8em;
-        }
-
-        .prize-badge {
-            background: #FF9800;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: bold;
-        }
-
-        .prize-badge.house {
-            background: #f44336;
-        }
-
-        .player-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .player-actions button {
-            padding: 4px 8px;
-            font-size: 0.75em;
-            min-width: auto;
-        }
 
         .waiting {
             color: #999;
@@ -358,31 +342,16 @@
     </style>
 </head>
 <body>
+    <div class="header-bar">
+        <h1>🎰 Bingo Caller - Control Panel</h1>
+        <div class="nav-links">
+            <a href="/admin.html">⚙️ Admin Settings</a>
+        </div>
+    </div>
+
     <div class="container">
         <!-- LEFT PANEL: Controls & Status -->
         <div class="left-panel">
-            <!-- Settings -->
-            <div class="control-box">
-                <h2>⚙️ Game Settings</h2>
-                <div>
-                    <label style="color: #4CAF50; margin-bottom: 10px; display: block;">Game Type:</label>
-                    <div class="radio-group">
-                        <label>
-                            <input type="radio" name="gameType" value="90" checked>
-                            90-Ball
-                        </label>
-                        <label>
-                            <input type="radio" name="gameType" value="75">
-                            75-Ball
-                        </label>
-                    </div>
-                </div>
-                <div class="settings-row">
-                    <label for="delayInput">Delay (ms):</label>
-                    <input type="number" id="delayInput" value="5000" min="100" max="60000">
-                </div>
-            </div>
-
             <!-- Controls -->
             <div class="control-box">
                 <h2>🎮 Controls</h2>
@@ -430,54 +399,9 @@
                 </table>
                 <div id="noDevices" class="waiting">No devices connected yet</div>
             </div>
-
-            <!-- Players & Prizes -->
-            <div class="control-box">
-                <h2>🎟️ Players & Prizes</h2>
-                <div class="button-row">
-                    <button id="addPlayerBtn" class="btn-primary">➕ Add Player</button>
-                    <button id="resetPlayersBtn" class="btn-danger" style="flex: 0.5;">🔄 Reset</button>
-                </div>
-                <div class="players-list" id="playersList">
-                    <div class="waiting">No players added yet</div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Add Player Dialog -->
-    <div id="addPlayerDialog" class="dialog">
-        <div class="dialog-content">
-            <div class="dialog-header">
-                <h2>Add Player</h2>
-                <button class="dialog-close" onclick="closeAddPlayerDialog()">✕</button>
-            </div>
-            <div class="dialog-body">
-                <input type="text" id="playerNameInput" placeholder="Enter player name" maxlength="50">
-            </div>
-            <div class="dialog-footer">
-                <button class="btn-success" onclick="confirmAddPlayer()">Add</button>
-                <button class="btn-primary" onclick="closeAddPlayerDialog()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Prize Dialog -->
-    <div id="addPrizeDialog" class="dialog">
-        <div class="dialog-content">
-            <div class="dialog-header">
-                <h2 id="prizeDialogTitle">Add Prize</h2>
-                <button class="dialog-close" onclick="closeAddPrizeDialog()">✕</button>
-            </div>
-            <div class="dialog-body">
-                <p style="color: #ccc; margin: 0;">Select prize type:</p>
-            </div>
-            <div class="dialog-footer prize-choice">
-                <button class="btn-warning" onclick="confirmAddPrize('line')">🎁 Line Prize</button>
-                <button class="btn-danger" onclick="confirmAddPrize('house')">🏠 House Prize</button>
-            </div>
-        </div>
-    </div>
 
     <script src="/shared/bingo-data.js"></script>
     <script src="/shared/client-id.js"></script>
@@ -488,8 +412,6 @@
         // Caller page state
         let currentGame = null;
         let devices = [];
-        let players = [];
-        let selectedPlayerForPrize = null;
         const clientId = getClientId();
         const announcer = new Announcer(clientId);
         let sseClient = null;
@@ -522,33 +444,6 @@
             document.getElementById('callBtn').addEventListener('click', callNumber);
             document.getElementById('resetBtn').addEventListener('click', reset);
             document.getElementById('muteBtn').addEventListener('click', toggleMute);
-            document.getElementById('addPlayerBtn').addEventListener('click', openAddPlayerDialog);
-            document.getElementById('resetPlayersBtn').addEventListener('click', resetPlayers);
-
-            // Radio buttons for game type (only usable pre-game)
-            document.querySelectorAll('input[name="gameType"]').forEach((radio) => {
-                radio.addEventListener('change', (e) => {
-                    if (!currentGame || !currentGame.gameRunning) {
-                        // Only allow changes when not running
-                    }
-                });
-            });
-
-            // Dialog close on outside click
-            document.getElementById('addPlayerDialog').addEventListener('click', (e) => {
-                if (e.target.id === 'addPlayerDialog') closeAddPlayerDialog();
-            });
-            document.getElementById('addPrizeDialog').addEventListener('click', (e) => {
-                if (e.target.id === 'addPrizeDialog') closeAddPrizeDialog();
-            });
-
-            // Enter key in player name input
-            document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') confirmAddPlayer();
-            });
-
-            // Load players on startup
-            loadPlayers();
         }
 
         // Start a new game
@@ -739,137 +634,6 @@
                 await postAction('/api/device/rename', { clientId: deviceId, name });
             } catch (err) {
                 alert('Error renaming device: ' + err.message);
-            }
-        }
-
-        // ===== PLAYER MANAGEMENT =====
-
-        // Load players from server
-        async function loadPlayers() {
-            try {
-                const res = await fetch('/api/players');
-                if (res.ok) {
-                    players = await res.json();
-                    updatePlayersList();
-                }
-            } catch (err) {
-                console.error('Error loading players:', err);
-            }
-        }
-
-        // Update players list display
-        function updatePlayersList() {
-            const container = document.getElementById('playersList');
-
-            if (players.length === 0) {
-                container.innerHTML = '<div class="waiting">No players added yet</div>';
-                return;
-            }
-
-            container.innerHTML = players
-                .map(
-                    (player) => `
-                <div class="player-item">
-                    <div class="player-name">${player.name}</div>
-                    <div class="player-prizes">
-                        <div class="prize-badge" title="Line Prizes">L: ${player.lineCount || 0}</div>
-                        <div class="prize-badge house" title="House Prizes">H: ${player.houseCount || 0}</div>
-                    </div>
-                    <div class="player-actions">
-                        <button class="btn-warning" onclick="openAddPrizeDialog('${player.id}', '${player.name}')">🎁</button>
-                        <button class="btn-danger" onclick="deletePlayer('${player.id}')">✕</button>
-                    </div>
-                </div>
-            `
-                )
-                .join('');
-        }
-
-        // Open add player dialog
-        function openAddPlayerDialog() {
-            document.getElementById('playerNameInput').value = '';
-            document.getElementById('addPlayerDialog').classList.add('show');
-            document.getElementById('playerNameInput').focus();
-        }
-
-        // Close add player dialog
-        function closeAddPlayerDialog() {
-            document.getElementById('addPlayerDialog').classList.remove('show');
-        }
-
-        // Confirm add player
-        async function confirmAddPlayer() {
-            const name = document.getElementById('playerNameInput').value.trim();
-            if (!name) {
-                alert('Please enter a player name');
-                return;
-            }
-
-            try {
-                const res = await postAction('/api/players', { name });
-                players.push(res);
-                updatePlayersList();
-                closeAddPlayerDialog();
-            } catch (err) {
-                alert('Error adding player: ' + err.message);
-            }
-        }
-
-        // Delete player
-        async function deletePlayer(playerId) {
-            if (!confirm('Delete this player?')) return;
-
-            try {
-                const res = await fetch(`/api/players/${playerId}`, { method: 'DELETE' });
-                if (!res.ok) throw new Error('Failed to delete player');
-                players = players.filter((p) => p.id !== playerId);
-                updatePlayersList();
-            } catch (err) {
-                alert('Error deleting player: ' + err.message);
-            }
-        }
-
-        // Open add prize dialog
-        function openAddPrizeDialog(playerId, playerName) {
-            selectedPlayerForPrize = playerId;
-            document.getElementById('prizeDialogTitle').textContent = `Add Prize for ${playerName}`;
-            document.getElementById('addPrizeDialog').classList.add('show');
-        }
-
-        // Close add prize dialog
-        function closeAddPrizeDialog() {
-            document.getElementById('addPrizeDialog').classList.remove('show');
-            selectedPlayerForPrize = null;
-        }
-
-        // Confirm add prize
-        async function confirmAddPrize(prizeType) {
-            if (!selectedPlayerForPrize) return;
-
-            try {
-                const res = await postAction(`/api/players/${selectedPlayerForPrize}/prize`, { prizeType });
-                // Update the player in our list
-                const idx = players.findIndex((p) => p.id === selectedPlayerForPrize);
-                if (idx >= 0) {
-                    players[idx] = res;
-                    updatePlayersList();
-                }
-                closeAddPrizeDialog();
-            } catch (err) {
-                alert('Error adding prize: ' + err.message);
-            }
-        }
-
-        // Reset all players
-        async function resetPlayers() {
-            if (!confirm('Reset all players? This cannot be undone.')) return;
-
-            try {
-                await postAction('/api/players/reset', {});
-                players = [];
-                updatePlayersList();
-            } catch (err) {
-                alert('Error resetting players: ' + err.message);
             }
         }
 
