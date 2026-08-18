@@ -73,6 +73,9 @@ The "Display Screen" page (`display.html`) shows:
 - **Status Bar** — Current game status and counts (called vs. remaining)
 - **Fullscreen Button** — Toggle fullscreen mode for big-screen presentation
 - **Auto-Announce** — When a new number is called, the device speaks it (using Web Speech API), unless muted by the caller
+- **Connection Badge** — Shows Connected/Reconnecting so you can tell at a glance if a screen has dropped
+- **Stays Connected** — Automatically reconnects no matter how long the server is unreachable (network hiccup, laptop sleep, server restart between games) — no page reload needed
+- **Stays Awake** — Prevents the device from sleeping/turning off its screen while the display page is open
 
 ## Game Modes
 
@@ -155,8 +158,9 @@ server.js
         ├── bingo-data.js   — Bingo call names (1–90)
         ├── client-id.js    — UUID generation & persistence
         ├── speech.js       — Text-to-speech helper
-        ├── sse-client.js   — SSE client wrapper
+        ├── sse-client.js   — SSE client wrapper (auto-reconnect + stale-connection watchdog)
         ├── announcer.js    — Auto-announce logic
+        ├── wake-lock.js    — Keeps the display screen from sleeping
         └── styles.css      — Shared dark-theme CSS
 ```
 
