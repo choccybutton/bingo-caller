@@ -33,16 +33,19 @@ function createInitialState() {
 
 /**
  * Start a new game
- * Initializes the pool, resets called numbers, sets up for play
+ * Initializes the pool, resets called numbers, sets up for play.
+ * autoPlay defaults to true (matches the "Start Game" button); pass false to
+ * start the game running-but-paused, e.g. when "Call Next" is used to start
+ * a game directly without auto-calling.
  */
-function startGame(state, { gameType, delayMs }) {
+function startGame(state, { gameType, delayMs, autoPlay = true }) {
   state.gameType = gameType === 75 ? 75 : 90;
   state.delayMs = Math.min(60000, Math.max(100, Number(delayMs) || 5000));
   state.pool = shuffleArray(Array.from({ length: state.gameType }, (_, i) => i + 1));
   state.calledNumbers = [];
   state.gameRunning = true;
-  state.gamePlaying = true;
-  state.status = 'Playing';
+  state.gamePlaying = autoPlay !== false;
+  state.status = state.gamePlaying ? 'Playing' : 'Paused';
   return state;
 }
 
