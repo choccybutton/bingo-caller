@@ -72,25 +72,39 @@
             flex: 1;
             margin-bottom: 10px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         body.fullscreen-mode .grid-container h3 {
             margin-top: 0;
+            margin-bottom: 5px;
             font-size: 12px;
+            flex-shrink: 0;
         }
 
         body.fullscreen-mode .number-grid {
-            grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
-            grid-auto-rows: 1fr;
-            gap: 7px;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            grid-auto-rows: minmax(40px, 1fr);
+            gap: 5px;
             padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
         }
 
         body.fullscreen-mode .ball {
-            font-size: clamp(16px, 2.5vw, 22px);
-            min-width: 55px;
-            min-height: 55px;
-            border: 2px solid rgba(0, 0, 0, 0.3);
+            font-size: clamp(12px, 1.8vw, 16px);
+            min-width: 40px;
+            min-height: 40px;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         body.fullscreen-mode .last-five-container {
