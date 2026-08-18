@@ -392,7 +392,7 @@
                     <button id="resetBtn" class="btn-danger">🔄 Reset</button>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
-                    <button id="callBtn" class="btn-primary" disabled>⏭ Call Next</button>
+                    <button id="callBtn" class="btn-primary">⏭ Call Next</button>
                     <button id="muteBtn" class="btn-primary">🔊 Mute Server</button>
                 </div>
             </div>
@@ -573,9 +573,17 @@
             }
         }
 
-        // Call the next number
+        // Call the next number. If no game is running yet, this starts one
+        // first (paused, i.e. not auto-calling) so you can begin a game just
+        // by pressing Call Next, without having to press Start Game first.
         async function callNumber() {
             try {
+                if (!currentGame || !currentGame.gameRunning) {
+                    const gameType = parseInt(document.querySelector('input[name="gameType"]:checked').value);
+                    const delayMs = parseInt(document.getElementById('delayInput').value);
+                    await postAction('/api/start', { gameType, delayMs, autoPlay: false });
+                    disableSettings();
+                }
                 await postAction('/api/call-next', {});
             } catch (err) {
                 alert('Error calling number: ' + err.message);
@@ -619,7 +627,7 @@
             document.getElementById('delayInput').disabled = false;
             document.getElementById('startBtn').disabled = false;
             document.getElementById('pauseBtn').disabled = true;
-            document.getElementById('callBtn').disabled = true;
+            document.getElementById('callBtn').disabled = false;
         }
 
         // Update UI

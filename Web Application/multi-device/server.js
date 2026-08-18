@@ -224,7 +224,8 @@ const server = http.createServer((req, res) => {
       stopAutoTimer(); // Clear any existing timer
       gameState.startGame(state, {
         gameType: body.gameType || 90,
-        delayMs: body.delayMs || 5000
+        delayMs: body.delayMs || 5000,
+        autoPlay: body.autoPlay !== false
       });
 
       broadcastState();

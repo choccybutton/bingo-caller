@@ -59,7 +59,7 @@ Every mutation (start, call, pause, reset, mute) is saved to `data/game-state.js
 
 The "Caller Control" page (`caller.html`) provides:
 - **Game Settings** — Choose 75-ball or 90-ball, set call delay (100–60,000ms, default 5,000ms)
-- **Controls** — Start, Pause/Resume, Call Next, Reset
+- **Controls** — Start, Pause/Resume, Call Next, Reset (Call Next also works before Start is pressed — it starts the game paused, then calls the first number)
 - **Status Display** — Shows the last number called and the game status
 - **Called Numbers Log** — Scrollable list of all called numbers
 - **Connected Devices Panel** — Table showing all connected devices, with mute/unmute buttons and inline rename capability
@@ -193,13 +193,18 @@ Returns the current game state and connected devices:
 Server-Sent Events endpoint. Client connects here to receive live state updates.
 
 ### POST `/api/start`
-Start a new game.
+Start a new game. `autoPlay` is optional and defaults to `true`; pass `false`
+to start the game running-but-paused (used by "Call Next" to start a game
+without auto-calling — see below).
 ```json
-{"gameType": 90, "delayMs": 5000}
+{"gameType": 90, "delayMs": 5000, "autoPlay": true}
 ```
 
 ### POST `/api/call-next`
-Manually call the next number.
+Manually call the next number. Returns 409 if no game is running — the
+caller page handles this by calling `/api/start` with `autoPlay: false`
+first, so clicking "Call Next" there starts a game (paused) if one isn't
+already running, without needing "Start Game" pressed first.
 
 ### POST `/api/toggle-play`
 Pause or resume auto-calling.
