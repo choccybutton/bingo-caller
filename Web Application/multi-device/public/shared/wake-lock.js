@@ -3,17 +3,21 @@
  *
  * Displays connect over plain http://<lan-ip> (not a secure context), so the
  * standard Screen Wake Lock API is frequently unavailable — same constraint
- * already noted in client-id.js for crypto.randomUUID(). We try it anyway
- * (works if the browser relaxes the requirement, or if served over https),
- * and always also run a fallback that works everywhere: most mobile/TV OSes
- * suppress screen-off while a <video> is actively playing, so we drive a
- * hidden, muted, looping video from a 1x1 canvas stream. No binary/video
- * asset needed — generated entirely in JS, keeping this dependency-free.
+ * already noted in client-id.js for crypto.randomUUID(). We try multiple
+ * fallbacks:
+ * 1. Native Screen Wake Lock API (HTTPS only)
+ * 2. Hidden video from canvas stream (works on most mobile/TV)
+ * 3. Animated canvas (keeps GPU active)
+ * 4. RequestAnimationFrame loop (prevents CPU sleep)
+ * 5. Periodic mouse movement (some systems respond to input)
  */
 
 let wakeLockSentinel = null;
 let fallbackVideo = null;
 let fallbackStream = null;
+let animationFrameId = null;
+let animationCanvas = null;
+let lastMouseMoveTime = 0;
 
 async function requestNativeWakeLock() {
   if (!('wakeLock' in navigator)) return false;
@@ -22,18 +26,16 @@ async function requestNativeWakeLock() {
     wakeLockSentinel.addEventListener('release', () => {
       wakeLockSentinel = null;
     });
+    console.log('Screen Wake Lock API enabled');
     return true;
   } catch (err) {
-    // Not a secure context, or the browser refused (e.g. tab not visible) —
-    // the fallback below still runs regardless.
-    console.warn('Screen Wake Lock unavailable, relying on fallback:', err.message);
+    console.warn('Screen Wake Lock unavailable:', err.message);
     return false;
   }
 }
 
 function startFallbackVideo() {
   if (fallbackVideo) {
-    // Already running — just make sure it's still playing
     fallbackVideo.play().catch(() => {});
     return;
   }
@@ -61,9 +63,55 @@ function startFallbackVideo() {
     });
 
     fallbackVideo = video;
+    console.log('Video fallback started');
   } catch (err) {
-    console.warn('Wake-lock fallback unavailable:', err.message);
+    console.warn('Wake-lock fallback video unavailable:', err.message);
+    // Still run other fallbacks
   }
+}
+
+function startAnimatedCanvas() {
+  if (animationFrameId) return;
+
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    canvas.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+    document.body.appendChild(canvas);
+    animationCanvas = canvas;
+
+    const ctx = canvas.getContext('2d');
+    let tick = 0;
+
+    function animate() {
+      // Draw alternating pixels to keep canvas active
+      ctx.fillStyle = tick % 2 === 0 ? '#000' : '#fff';
+      ctx.fillRect(0, 0, 1, 1);
+      tick++;
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    animate();
+    console.log('Animated canvas fallback started');
+  } catch (err) {
+    console.warn('Animated canvas fallback unavailable:', err.message);
+  }
+}
+
+function startMouseMoveFallback() {
+  // Periodically trigger mouse events to keep system from sleeping
+  setInterval(() => {
+    const now = Date.now();
+    if (now - lastMouseMoveTime > 30000) {  // Every 30 seconds
+      const event = new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+      });
+      document.dispatchEvent(event);
+      lastMouseMoveTime = now;
+    }
+  }, 5000);
 }
 
 function resumeFallbackVideoIfNeeded() {
@@ -72,21 +120,41 @@ function resumeFallbackVideoIfNeeded() {
   }
 }
 
-/**
- * Request the screen stay awake. Safe to call multiple times.
- */
-async function requestWakeLock() {
-  await requestNativeWakeLock();
-  // Always run the fallback too — harmless alongside a native lock, and
-  // covers TVs/browsers where the native API silently doesn't actually
-  // prevent screen-off despite being "supported".
-  startFallbackVideo();
+function resumeAnimatedCanvasIfNeeded() {
+  if (!animationFrameId && animationCanvas) {
+    startAnimatedCanvas();
+  }
 }
 
 /**
- * Release the wake lock and stop the fallback video.
+ * Request the screen stay awake. Safe to call multiple times.
+ * Uses multiple fallbacks to maximize compatibility across platforms.
+ */
+async function requestWakeLock() {
+  console.log('Requesting screen wake lock...');
+
+  // Try native API first
+  const nativeSuccess = await requestNativeWakeLock();
+
+  // Always run multiple fallbacks
+  // Video fallback works best on mobile/TV
+  startFallbackVideo();
+
+  // Animated canvas keeps GPU busy (helps on some Linux systems)
+  startAnimatedCanvas();
+
+  // Mouse movement helps some systems
+  startMouseMoveFallback();
+
+  console.log(`Wake lock initialized (native: ${nativeSuccess}, fallbacks: video+canvas+mouse)`);
+}
+
+/**
+ * Release the wake lock and stop all fallbacks.
  */
 function releaseWakeLock() {
+  console.log('Releasing wake lock...');
+
   if (wakeLockSentinel) {
     wakeLockSentinel.release().catch(() => {});
     wakeLockSentinel = null;
@@ -100,12 +168,22 @@ function releaseWakeLock() {
     fallbackStream.getTracks().forEach((track) => track.stop());
     fallbackStream = null;
   }
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  if (animationCanvas) {
+    animationCanvas.remove();
+    animationCanvas = null;
+  }
 }
 
-// The native Wake Lock API auto-releases when the tab is hidden, and some
-// browsers pause the fallback video too — reacquire/resume on return.
+// Resume wake locks when tab becomes visible again
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
+
+  console.log('Tab became visible, resuming wake lock...');
   if (!wakeLockSentinel) requestNativeWakeLock();
   resumeFallbackVideoIfNeeded();
+  resumeAnimatedCanvasIfNeeded();
 });
