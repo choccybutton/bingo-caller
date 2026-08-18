@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Caller - Control Panel</title>
+    <link rel="stylesheet" href="/shared/styles.css">
+    <style>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            padding: 20px;
+            height: auto;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-box {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+        }
+
+        .control-box h2 {
+            color: #4CAF50;
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .button-row button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .settings-row label {
+            color: #4CAF50;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .settings-row input,
+        .settings-row select {
+            flex: 1;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .radio-group input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .status-box {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            text-align: center;
+        }
+
+        .status-box .big-number {
+            font-size: 3em;
+            color: #4CAF50;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .status-box .label {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .status-box .name {
+            color: #ddd;
+            font-size: 1.1em;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .called-list {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .called-list-item {
+            padding: 5px;
+            margin: 3px 0;
+            background: #2a2a2a;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 8px;
+            min-width: 40px;
+            text-align: center;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .device-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            background: #1a1a1a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .device-table th,
+        .device-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            color: #ccc;
+        }
+
+        .device-table th {
+            background: #2a2a2a;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .device-table tr:hover {
+            background: #2a2a2a;
+        }
+
+        .device-role {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .device-status {
+            color: #4CAF50;
+        }
+
+        .device-status.disconnected {
+            color: #999;
+        }
+
+        .btn-mute {
+            padding: 4px 8px;
+            font-size: 0.85em;
+            min-width: 60px;
+        }
+
+        .device-name-input {
+            padding: 4px;
+            font-size: 0.85em;
+            min-width: 100px;
+        }
+
+        .players-list {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.85em;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .player-name {
+            flex: 1;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .player-prizes {
+            display: flex;
+            gap: 15px;
+            margin-right: 10px;
+            font-size: 0.8em;
+        }
+
+        .prize-badge {
+            background: #FF9800;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .prize-badge.house {
+            background: #f44336;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .player-actions button {
+            padding: 4px 8px;
+            font-size: 0.75em;
+            min-width: auto;
+        }
+
+        .waiting {
+            color: #999;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        /* Dialog/Modal styles */
+        .dialog {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog.show {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #4CAF50;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 15px;
+        }
+
+        .dialog-header h2 {
+            color: #4CAF50;
+            margin: 0;
+        }
+
+        .dialog-close {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2em;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-close:hover {
+            background: #da190b;
+        }
+
+        .dialog-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .dialog-body input {
+            padding: 8px 12px;
+            background: #333;
+            border: 2px solid #4CAF50;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .dialog-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .dialog-footer button {
+            padding: 10px 20px;
+            font-size: 13px;
+        }
+
+        .prize-choice {
+            display: flex;
+            gap: 10px;
+        }
+
+        .prize-choice button {
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LEFT PANEL: Controls & Status -->
+        <div class="left-panel">
+            <!-- Settings -->
+            <div class="control-box">
+                <h2>⚙️ Game Settings</h2>
+                <div>
+                    <label style="color: #4CAF50; margin-bottom: 10px; display: block;">Game Type:</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="gameType" value="90" checked>
+                            90-Ball
+                        </label>
+                        <label>
+                            <input type="radio" name="gameType" value="75">
+                            75-Ball
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <label for="delayInput">Delay (ms):</label>
+                    <input type="number" id="delayInput" value="5000" min="100" max="60000">
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="control-box">
+                <h2>🎮 Controls</h2>
+                <div class="button-row">
+                    <button id="startBtn" class="btn-success">▶️ Start Game</button>
+                    <button id="pauseBtn" class="btn-warning" disabled>⏸ Pause</button>
+                    <button id="resetBtn" class="btn-danger">🔄 Reset</button>
+                </div>
+                <div class="button-row" style="margin-top: 10px;">
+                    <button id="callBtn" class="btn-primary" disabled>⏭ Call Next</button>
+                    <button id="muteBtn" class="btn-primary">🔊 Mute Server</button>
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="status-box">
+                <div class="label">Last Number Called</div>
+                <div class="big-number" id="lastNumberDisplay">---</div>
+                <div class="name" id="lastNumberName"></div>
+                <div class="label" style="margin-top: 10px;" id="gameStatus">Ready to start...</div>
+            </div>
+
+            <!-- Called Numbers Log -->
+            <div class="control-box">
+                <h2>📋 Called Numbers</h2>
+                <div class="called-list" id="calledList"><span class="waiting">No numbers called yet</span></div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Connected Devices & Players -->
+        <div class="right-panel">
+            <div class="control-box">
+                <h2>📱 Connected Devices</h2>
+                <table class="device-table" id="deviceTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Mute</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceTableBody">
+                    </tbody>
+                </table>
+                <div id="noDevices" class="waiting">No devices connected yet</div>
+            </div>
+
+            <!-- Players & Prizes -->
+            <div class="control-box">
+                <h2>🎟️ Players & Prizes</h2>
+                <div class="button-row">
+                    <button id="addPlayerBtn" class="btn-primary">➕ Add Player</button>
+                    <button id="resetPlayersBtn" class="btn-danger" style="flex: 0.5;">🔄 Reset</button>
+                </div>
+                <div class="players-list" id="playersList">
+                    <div class="waiting">No players added yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Player Dialog -->
+    <div id="addPlayerDialog" class="dialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h2>Add Player</h2>
+                <button class="dialog-close" onclick="closeAddPlayerDialog()">✕</button>
+            </div>
+            <div class="dialog-body">
+                <input type="text" id="playerNameInput" placeholder="Enter player name" maxlength="50">
+            </div>
+            <div class="dialog-footer">
+                <button class="btn-success" onclick="confirmAddPlayer()">Add</button>
+                <button class="btn-primary" onclick="closeAddPlayerDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Prize Dialog -->
+    <div id="addPrizeDialog" class="dialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h2 id="prizeDialogTitle">Add Prize</h2>
+                <button class="dialog-close" onclick="closeAddPrizeDialog()">✕</button>
+            </div>
+            <div class="dialog-body">
+                <p style="color: #ccc; margin: 0;">Select prize type:</p>
+            </div>
+            <div class="dialog-footer prize-choice">
+                <button class="btn-warning" onclick="confirmAddPrize('line')">🎁 Line Prize</button>
+                <button class="btn-danger" onclick="confirmAddPrize('house')">🏠 House Prize</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/bingo-data.js"></script>
+    <script src="/shared/client-id.js"></script>
+    <script src="/shared/speech.js"></script>
+    <script src="/shared/sse-client.js"></script>
+    <script src="/shared/announcer.js"></script>
+    <script>
+        // Caller page state
+        let currentGame = null;
+        let devices = [];
+        let players = [];
+        let selectedPlayerForPrize = null;
+        const clientId = getClientId();
+        const announcer = new Announcer(clientId);
+        let sseClient = null;
+
+        // Initialize caller
+        function initCaller() {
+            setupEventListeners();
+            connectToServer();
+        }
+
+        // Connect to server
+        function connectToServer() {
+            sseClient = new SSEClient(clientId, 'caller', onStateUpdate);
+            sseClient.connect();
+        }
+
+        // Handle state updates
+        function onStateUpdate(payload) {
+            currentGame = payload.game;
+            devices = payload.devices;
+
+            updateUI();
+            announcer.onStateUpdate(payload);
+        }
+
+        // Setup button handlers
+        function setupEventListeners() {
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('callBtn').addEventListener('click', callNumber);
+            document.getElementById('resetBtn').addEventListener('click', reset);
+            document.getElementById('muteBtn').addEventListener('click', toggleMute);
+            document.getElementById('addPlayerBtn').addEventListener('click', openAddPlayerDialog);
+            document.getElementById('resetPlayersBtn').addEventListener('click', resetPlayers);
+
+            // Radio buttons for game type (only usable pre-game)
+            document.querySelectorAll('input[name="gameType"]').forEach((radio) => {
+                radio.addEventListener('change', (e) => {
+                    if (!currentGame || !currentGame.gameRunning) {
+                        // Only allow changes when not running
+                    }
+                });
+            });
+
+            // Dialog close on outside click
+            document.getElementById('addPlayerDialog').addEventListener('click', (e) => {
+                if (e.target.id === 'addPlayerDialog') closeAddPlayerDialog();
+            });
+            document.getElementById('addPrizeDialog').addEventListener('click', (e) => {
+                if (e.target.id === 'addPrizeDialog') closeAddPrizeDialog();
+            });
+
+            // Enter key in player name input
+            document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmAddPlayer();
+            });
+
+            // Load players on startup
+            loadPlayers();
+        }
+
+        // Start a new game
+        async function startGame() {
+            const gameType = parseInt(document.querySelector('input[name="gameType"]:checked').value);
+            const delayMs = parseInt(document.getElementById('delayInput').value);
+
+            try {
+                await postAction('/api/start', { gameType, delayMs });
+                disableSettings();
+            } catch (err) {
+                alert('Error starting game: ' + err.message);
+            }
+        }
+
+        // Toggle pause
+        async function togglePause() {
+            try {
+                await postAction('/api/toggle-play', {});
+            } catch (err) {
+                alert('Error toggling pause: ' + err.message);
+            }
+        }
+
+        // Call the next number
+        async function callNumber() {
+            try {
+                await postAction('/api/call-next', {});
+            } catch (err) {
+                alert('Error calling number: ' + err.message);
+            }
+        }
+
+        // Reset
+        async function reset() {
+            if (!confirm('Reset the game?')) return;
+            try {
+                await postAction('/api/reset', {});
+                enableSettings();
+            } catch (err) {
+                alert('Error resetting: ' + err.message);
+            }
+        }
+
+        // Toggle mute for caller device
+        async function toggleMute() {
+            const thisDevice = devices.find((d) => d.id === clientId);
+            if (!thisDevice) return;
+
+            try {
+                await postAction('/api/device/mute', { clientId, muted: !thisDevice.muted });
+            } catch (err) {
+                alert('Error toggling mute: ' + err.message);
+            }
+        }
+
+        // Disable/enable game settings based on state
+        function disableSettings() {
+            document.querySelectorAll('input[name="gameType"]').forEach((r) => (r.disabled = true));
+            document.getElementById('delayInput').disabled = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('callBtn').disabled = false;
+        }
+
+        function enableSettings() {
+            document.querySelectorAll('input[name="gameType"]').forEach((r) => (r.disabled = false));
+            document.getElementById('delayInput').disabled = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('callBtn').disabled = true;
+        }
+
+        // Update UI
+        function updateUI() {
+            if (!currentGame) return;
+
+            // Update last number
+            if (currentGame.lastNumber !== null) {
+                document.getElementById('lastNumberDisplay').textContent = currentGame.lastNumber;
+                document.getElementById('lastNumberName').textContent = `"${BINGO_NAMES[currentGame.lastNumber]}"`;
+            } else {
+                document.getElementById('lastNumberDisplay').textContent = '---';
+                document.getElementById('lastNumberName').textContent = '';
+            }
+
+            // Update game status
+            document.getElementById('gameStatus').textContent = currentGame.status + ` (${currentGame.calledCount}/${currentGame.gameType})`;
+
+            // Update button states
+            if (currentGame.gameRunning) {
+                disableSettings();
+                document.getElementById('pauseBtn').disabled = false;
+                document.getElementById('pauseBtn').textContent = currentGame.gamePlaying ? '⏸ Pause' : '▶️ Resume';
+            } else {
+                enableSettings();
+            }
+
+            // Update called numbers list
+            updateCalledList();
+
+            // Update devices table
+            updateDevicesTable();
+
+            // Update mute button
+            const thisDevice = devices.find((d) => d.id === clientId);
+            if (thisDevice) {
+                document.getElementById('muteBtn').textContent = thisDevice.muted ? '🔇 Unmute' : '🔊 Mute';
+                document.getElementById('muteBtn').classList.toggle('btn-warning', thisDevice.muted);
+                document.getElementById('muteBtn').classList.toggle('btn-primary', !thisDevice.muted);
+            }
+        }
+
+        // Update the called numbers list
+        function updateCalledList() {
+            const list = document.getElementById('calledList');
+            if (currentGame.calledNumbers.length === 0) {
+                list.innerHTML = '<span class="waiting">No numbers called yet</span>';
+            } else {
+                list.innerHTML = currentGame.calledNumbers
+                    .map((n) => `<div class="called-list-item">${n}</div>`)
+                    .join('');
+            }
+        }
+
+        // Update devices table
+        function updateDevicesTable() {
+            const table = document.getElementById('deviceTable');
+            const tbody = document.getElementById('deviceTableBody');
+            const noDevices = document.getElementById('noDevices');
+
+            if (devices.length === 0) {
+                table.style.display = 'none';
+                noDevices.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            noDevices.style.display = 'none';
+
+            tbody.innerHTML = devices
+                .map(
+                    (device) => `
+                <tr>
+                    <td>
+                        <input type="text" class="device-name-input" data-id="${device.id}" value="${device.name}"
+                               onblur="renameDevice('${device.id}', this.value)">
+                    </td>
+                    <td><span class="device-role">${device.role}</span></td>
+                    <td>
+                        <span class="device-status ${device.connected ? '' : 'disconnected'}">
+                            ${device.connected ? '🟢 Online' : '⚫ Offline'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-mute ${device.muted ? 'btn-warning' : 'btn-primary'}"
+                                onclick="muteDevice('${device.id}', ${!device.muted})">
+                            ${device.muted ? '🔇' : '🔊'}
+                        </button>
+                    </td>
+                </tr>
+            `
+                )
+                .join('');
+        }
+
+        // Mute a specific device
+        async function muteDevice(deviceId, muted) {
+            try {
+                await postAction('/api/device/mute', { clientId: deviceId, muted });
+            } catch (err) {
+                alert('Error muting device: ' + err.message);
+            }
+        }
+
+        // Rename a device
+        async function renameDevice(deviceId, name) {
+            if (!name.trim()) return;
+            try {
+                await postAction('/api/device/rename', { clientId: deviceId, name });
+            } catch (err) {
+                alert('Error renaming device: ' + err.message);
+            }
+        }
+
+        // ===== PLAYER MANAGEMENT =====
+
+        // Load players from server
+        async function loadPlayers() {
+            try {
+                const res = await fetch('/api/players');
+                if (res.ok) {
+                    players = await res.json();
+                    updatePlayersList();
+                }
+            } catch (err) {
+                console.error('Error loading players:', err);
+            }
+        }
+
+        // Update players list display
+        function updatePlayersList() {
+            const container = document.getElementById('playersList');
+
+            if (players.length === 0) {
+                container.innerHTML = '<div class="waiting">No players added yet</div>';
+                return;
+            }
+
+            container.innerHTML = players
+                .map(
+                    (player) => `
+                <div class="player-item">
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-prizes">
+                        <div class="prize-badge" title="Line Prizes">L: ${player.lineCount || 0}</div>
+                        <div class="prize-badge house" title="House Prizes">H: ${player.houseCount || 0}</div>
+                    </div>
+                    <div class="player-actions">
+                        <button class="btn-warning" onclick="openAddPrizeDialog('${player.id}', '${player.name}')">🎁</button>
+                        <button class="btn-danger" onclick="deletePlayer('${player.id}')">✕</button>
+                    </div>
+                </div>
+            `
+                )
+                .join('');
+        }
+
+        // Open add player dialog
+        function openAddPlayerDialog() {
+            document.getElementById('playerNameInput').value = '';
+            document.getElementById('addPlayerDialog').classList.add('show');
+            document.getElementById('playerNameInput').focus();
+        }
+
+        // Close add player dialog
+        function closeAddPlayerDialog() {
+            document.getElementById('addPlayerDialog').classList.remove('show');
+        }
+
+        // Confirm add player
+        async function confirmAddPlayer() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if (!name) {
+                alert('Please enter a player name');
+                return;
+            }
+
+            try {
+                const res = await postAction('/api/players', { name });
+                players.push(res);
+                updatePlayersList();
+                closeAddPlayerDialog();
+            } catch (err) {
+                alert('Error adding player: ' + err.message);
+            }
+        }
+
+        // Delete player
+        async function deletePlayer(playerId) {
+            if (!confirm('Delete this player?')) return;
+
+            try {
+                const res = await fetch(`/api/players/${playerId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete player');
+                players = players.filter((p) => p.id !== playerId);
+                updatePlayersList();
+            } catch (err) {
+                alert('Error deleting player: ' + err.message);
+            }
+        }
+
+        // Open add prize dialog
+        function openAddPrizeDialog(playerId, playerName) {
+            selectedPlayerForPrize = playerId;
+            document.getElementById('prizeDialogTitle').textContent = `Add Prize for ${playerName}`;
+            document.getElementById('addPrizeDialog').classList.add('show');
+        }
+
+        // Close add prize dialog
+        function closeAddPrizeDialog() {
+            document.getElementById('addPrizeDialog').classList.remove('show');
+            selectedPlayerForPrize = null;
+        }
+
+        // Confirm add prize
+        async function confirmAddPrize(prizeType) {
+            if (!selectedPlayerForPrize) return;
+
+            try {
+                const res = await postAction(`/api/players/${selectedPlayerForPrize}/prize`, { prizeType });
+                // Update the player in our list
+                const idx = players.findIndex((p) => p.id === selectedPlayerForPrize);
+                if (idx >= 0) {
+                    players[idx] = res;
+                    updatePlayersList();
+                }
+                closeAddPrizeDialog();
+            } catch (err) {
+                alert('Error adding prize: ' + err.message);
+            }
+        }
+
+        // Reset all players
+        async function resetPlayers() {
+            if (!confirm('Reset all players? This cannot be undone.')) return;
+
+            try {
+                await postAction('/api/players/reset', {});
+                players = [];
+                updatePlayersList();
+            } catch (err) {
+                alert('Error resetting players: ' + err.message);
+            }
+        }
+
+        // Start on load
+        window.addEventListener('DOMContentLoaded', initCaller);
+    </script>
+</body>
+</html>

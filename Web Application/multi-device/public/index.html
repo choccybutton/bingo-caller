@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Caller - Mode Selection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .mode-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        a {
+            display: block;
+            padding: 40px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        a.caller {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            border-color: #4CAF50;
+        }
+
+        a.caller:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        a.display {
+            background: linear-gradient(135deg, #FF9800 0%, #e68900 100%);
+            border-color: #4CAF50;
+        }
+
+        a.display:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .info {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .info strong {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎰 Bingo Caller</h1>
+
+        <div class="mode-grid">
+            <a href="caller.html" class="caller">📱 Caller Control</a>
+            <a href="display.html" class="display">📺 Display Screen</a>
+        </div>
+
+        <div class="info">
+            <strong>On the same WiFi?</strong><br>
+            The caller starts on the laptop running the server, and display screens connect to the same LAN IP shown on the caller's startup message.
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "bingo-caller-multi-device",
+  "version": "1.0.0",
+  "description": "Multi-device Bingo Caller with LAN sync",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node scripts/smoke-test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["bingo", "game", "multiplayer"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}

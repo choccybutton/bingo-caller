@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Caller - Display</title>
+    <link rel="stylesheet" href="/shared/styles.css">
+    <style>
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: #2a2a2a;
+            border-radius: 0;
+            padding: 10px;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            gap: 8px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            flex: 1;
+        }
+
+        /* Fullscreen mode adjustments */
+        body.fullscreen-mode {
+            overflow: hidden;
+        }
+
+        body.fullscreen-mode .container {
+            max-width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.fullscreen-mode .header {
+            margin-bottom: 10px;
+        }
+
+        body.fullscreen-mode h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        body.fullscreen-mode .last-number-display {
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+
+        body.fullscreen-mode .last-number {
+            font-size: 36px;
+        }
+
+        body.fullscreen-mode .last-number-name {
+            font-size: 14px;
+        }
+
+        body.fullscreen-mode .grid-container {
+            flex: 1;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        body.fullscreen-mode .grid-container h3 {
+            margin-top: 0;
+            font-size: 12px;
+        }
+
+        body.fullscreen-mode .number-grid {
+            grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+            grid-auto-rows: 1fr;
+            gap: 7px;
+            padding: 0;
+        }
+
+        body.fullscreen-mode .ball {
+            font-size: clamp(16px, 2.5vw, 22px);
+            min-width: 55px;
+            min-height: 55px;
+            border: 2px solid rgba(0, 0, 0, 0.3);
+        }
+
+        body.fullscreen-mode .last-five-container {
+            margin-top: auto;
+            padding: 10px;
+        }
+
+        body.fullscreen-mode .last-five-container h3 {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        body.fullscreen-mode .last-five-ball {
+            min-width: 70px;
+            width: 70px;
+            height: 70px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 Bingo Display</h1>
+            <button id="fullscreenBtn" class="fullscreen-btn">⛶ Fullscreen</button>
+        </div>
+
+        <!-- Last number called display -->
+        <div class="last-number-display">
+            <h2>Called</h2>
+            <div class="last-number" id="lastNumber">---</div>
+            <div class="last-number-name" id="lastNumberName"></div>
+        </div>
+
+        <!-- Number grid -->
+        <div class="grid-container">
+            <h3>Numbers</h3>
+            <div class="number-grid" id="numberGrid"></div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Status:</span>
+                <span class="status-value" id="status">Waiting...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Called:</span>
+                <span class="status-value" id="calledCount">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Remaining:</span>
+                <span class="status-value" id="remainingCount">0</span>
+            </div>
+        </div>
+
+        <!-- Last five numbers -->
+        <div class="last-five-container">
+            <h3>Last 5 Called</h3>
+            <div class="last-five-numbers" id="lastFive">---</div>
+        </div>
+    </div>
+
+    <script src="/shared/bingo-data.js"></script>
+    <script src="/shared/client-id.js"></script>
+    <script src="/shared/speech.js"></script>
+    <script src="/shared/sse-client.js"></script>
+    <script src="/shared/announcer.js"></script>
+    <script>
+        // Display state management
+        let currentGame = null;
+        const clientId = getClientId();
+        const announcer = new Announcer(clientId);
+        let sseClient = null;
+
+        // Initialize the display
+        function initDisplay() {
+            renderGrid(); // Render empty grid initially
+            connectToServer();
+        }
+
+        // Connect to the server via SSE
+        function connectToServer() {
+            sseClient = new SSEClient(clientId, 'display', onStateUpdate);
+            sseClient.connect();
+        }
+
+        // Handle incoming state updates from the server
+        function onStateUpdate(payload) {
+            currentGame = payload.game;
+
+            // Update the UI
+            updateGrid();
+            updateLastNumber();
+            updateLastFive();
+            updateStatus();
+
+            // Announce if a new number was called
+            announcer.onStateUpdate(payload);
+        }
+
+        // Render the number grid
+        function renderGrid() {
+            const grid = document.getElementById('numberGrid');
+            grid.innerHTML = '';
+
+            const gameType = currentGame ? currentGame.gameType : 90;
+            const calledNumbers = currentGame ? currentGame.calledNumbers : [];
+
+            for (let i = 1; i <= gameType; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.textContent = i;
+
+                if (calledNumbers.includes(i)) {
+                    ball.classList.add('called');
+                } else {
+                    ball.classList.add('uncalled');
+                }
+
+                grid.appendChild(ball);
+            }
+        }
+
+        // Update the grid to reflect called status
+        function updateGrid() {
+            const balls = document.querySelectorAll('.ball');
+            balls.forEach((ball) => {
+                const num = parseInt(ball.textContent);
+                if (currentGame.calledNumbers.includes(num)) {
+                    ball.classList.remove('uncalled');
+                    ball.classList.add('called');
+                } else {
+                    ball.classList.remove('called');
+                    ball.classList.add('uncalled');
+                }
+            });
+        }
+
+        // Update the last number display
+        function updateLastNumber() {
+            const numberEl = document.getElementById('lastNumber');
+            const nameEl = document.getElementById('lastNumberName');
+
+            if (currentGame.lastNumber !== null) {
+                numberEl.textContent = currentGame.lastNumber;
+                nameEl.textContent = `"${BINGO_NAMES[currentGame.lastNumber]}"`;
+            } else {
+                numberEl.textContent = '---';
+                nameEl.textContent = '';
+            }
+        }
+
+        // Update the last five numbers
+        function updateLastFive() {
+            const container = document.getElementById('lastFive');
+
+            if (currentGame.lastFive.length === 0) {
+                container.innerHTML = '<span style="color: #999;">---</span>';
+            } else {
+                container.innerHTML = currentGame.lastFive
+                    .map(
+                        (n) =>
+                            `<div class="last-five-ball">${n}</div>`
+                    )
+                    .join('');
+            }
+        }
+
+        // Update the status bar
+        function updateStatus() {
+            document.getElementById('status').textContent = currentGame.status || 'Waiting...';
+            document.getElementById('calledCount').textContent = currentGame.calledCount;
+            document.getElementById('remainingCount').textContent = currentGame.remainingCount;
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            const body = document.body;
+            const btn = document.getElementById('fullscreenBtn');
+
+            if (body.classList.contains('fullscreen-mode')) {
+                body.classList.remove('fullscreen-mode');
+                btn.textContent = '⛶ Fullscreen';
+                document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+            } else {
+                body.classList.add('fullscreen-mode');
+                btn.textContent = '⛶ Exit';
+
+                // Try to request fullscreen API if available
+                const container = document.querySelector('.container');
+                if (container?.requestFullscreen) {
+                    container.requestFullscreen().catch(() => {
+                        // Fullscreen API not available, just use CSS fullscreen
+                    });
+                }
+            }
+        }
+
+        // Handle Escape key to exit fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.body.classList.contains('fullscreen-mode')) {
+                toggleFullscreen();
+            }
+        });
+
+        // Attach button handler
+        document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+
+        // Start on load
+        window.addEventListener('DOMContentLoaded', initDisplay);
+    </script>
+</body>
+</html>

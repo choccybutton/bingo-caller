@@ -1,0 +1,19 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.local
+.vscode/
+.idea/
+dist/
+build/
+*.swp
+*.swo
+*~
+.cache/
+.next/
+out/
+BingoCaller-TV-App/node_modules/
+BingoCaller-TV-App/.env*
+Web Application/node_modules/
+Web Application/multi-device/data/
