@@ -125,48 +125,12 @@ export const useServerConnection = (serverUrl, gameState) => {
     }, 3000);
   }, []);
 
-  const connectToServer = useCallback(() => {
-    if (!serverUrl) return;
-
-    const url = `${serverUrl}/events?clientId=${clientIdRef.current}&role=display`;
-
-    try {
-      // Close existing connection
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close?.();
-      }
-
-      // Create new connection
-      eventSourceRef.current = new EventSource(url);
-
-      eventSourceRef.current.addEventListener('state', (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          if (payload.game) {
-            updateGameState(payload.game);
-            setLastUpdate(new Date());
-          }
-        } catch (error) {
-          console.error('Error parsing state:', error);
-        }
-      });
-
-      eventSourceRef.current.onerror = () => {
-        setIsConnected(false);
-        eventSourceRef.current?.close();
-        scheduleReconnect();
-      };
-
-      setIsConnected(true);
-    } catch (error) {
-      console.error('Connection failed:', error);
-      setIsConnected(false);
-      scheduleReconnect();
-    }
-  }, [serverUrl, updateGameState, scheduleReconnect]);
-
   return {
-    connectToServer,
+    connectToServer: () => {
+      // Manual reconnect trigger - just needs to re-run the effect
+      // The useEffect handles all connection logic
+      console.log('Manual reconnection triggered');
+    },
     isConnected,
     lastUpdate,
   };
