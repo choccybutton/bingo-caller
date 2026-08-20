@@ -5,7 +5,16 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Platform } from 'react-native';
-import { v4 as uuidv4 } from 'uuid';
+
+// Simple UUID v4 generator that doesn't require crypto.getRandomValues()
+// This works on Android TV where crypto APIs aren't available
+const generateClientId = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
 
 export const useServerConnection = (serverUrl, gameState) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -18,7 +27,7 @@ export const useServerConnection = (serverUrl, gameState) => {
   // Generate or retrieve client ID
   useEffect(() => {
     if (!clientIdRef.current) {
-      clientIdRef.current = uuidv4();
+      clientIdRef.current = generateClientId();
     }
   }, []);
 
